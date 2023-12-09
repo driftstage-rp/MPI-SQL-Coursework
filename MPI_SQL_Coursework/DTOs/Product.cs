@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MPI_SQL_Coursework.DTOs
 {
-    internal class Product
+    [Serializable]
+    public class Product
     {
+        public int ProductId { get; set; }
+        public string Productname { get; set; }
     }
 }
