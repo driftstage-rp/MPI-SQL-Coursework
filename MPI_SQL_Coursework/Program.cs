@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using MPI_SQL_Coursework.DTOs;
+using System.Web;
 
 namespace MPI_SQL_Coursework
 {
@@ -9,9 +10,7 @@ namespace MPI_SQL_Coursework
     {
         static void Main(string[] args)
         {
-            //Delete(args);
-
-            Select(args);
+            Delete(args);
         }
 
         static void Delete(string[] args)
@@ -22,70 +21,46 @@ namespace MPI_SQL_Coursework
                 {
                     var timer = new System.Diagnostics.Stopwatch();
                     timer.Start();
-                    List<Product> total = new List<Product>();
+                    string query = "";
+                    int total = 0;
 
                     if (comm.Size == 1)
                     {
-                        var query = string.Join(" union all ", Queries.Queries.Unions);
-                        total = DbContext.GetProducts(query);
+                        string querytemplate = Queries.Queries.Delete.Distinct().FirstOrDefault();
+                        for (int i = 0; i < Queries.Queries.Delete.Count; i++)
+                        {
+                            query = string.Concat(query, string.Concat(querytemplate, Convert.ToString(i + 1) + "; "));
+                            total = i+1;
+                            
+                        }
+                        DbContext.DelNum(query);
                     }
                     else
                     {
                         for (int i = 1; i < comm.Size; i++)
                         {
-                            var temp = comm.Receive<List<Product>>(i, 0);
-                            total = total.Concat(temp).ToList();
+                            var temp = comm.Receive<int>(i, 0);
+                            total += temp;
                         }
                     }
-
                     timer.Stop();
-                    Console.WriteLine($"time - {timer.ElapsedMilliseconds} count - {total.Count}");
+                    Console.WriteLine($"time - {timer.ElapsedMilliseconds} count - {total}");
                 }
                 else
                 {
-                    var total = Queries.Queries.Unions.Count / (comm.Size - 1);
+                    var total = Queries.Queries.Delete.Count / (comm.Size - 1); 
                     var skip = total * (comm.Rank - 1);
-                    var res = DbContext.GetProducts(string.Join(" union all ", Queries.Queries.Unions.Skip(skip).Take(total)));
-                    comm.Send(res, 0, 0);
-                }
-            });
-        }
-
-        static void Select(string[] args)
-        {
-            MPI.Environment.Run(ref args, comm =>
-            {
-                if (comm.Rank == 0)
-                {
-                    var timer = new System.Diagnostics.Stopwatch();
-                    timer.Start();
-                    List<Product> total = new List<Product>();
-
-                    if (comm.Size == 1)
+                    var query = "";
+                    string querytemplate = Queries.Queries.Delete.Distinct().FirstOrDefault();
+                    for (int i = skip; i < skip+total; i++)
                     {
-                        var query = string.Join(" union all ", Queries.Queries.Unions);
-                        total = DbContext.GetProducts(query);
+                        query = string.Concat(query, string.Concat(querytemplate, Convert.ToString(i + 1) + "; "));
                     }
-                    else
-                    {
-                        for (int i = 1; i < comm.Size; i++)
-                        {
-                            var temp = comm.Receive<List<Product>>(i, 0);
-                            total = total.Concat(temp).ToList();
-                        }
-                    }
-
-                    timer.Stop();
-                    Console.WriteLine($"time - {timer.ElapsedMilliseconds} count - {total.Count}");
-                }
-                else
-                {
-                    var total = Queries.Queries.Unions.Count / (comm.Size - 1);
-                    var skip = total * (comm.Rank - 1);
-                    var res = DbContext.GetProducts(string.Join(" union all ", Queries.Queries.Unions.Skip(skip).Take(total)));
-                    comm.Send(res, 0, 0);
+                    DbContext.DelNum(query);
+                    comm.Send(total, 0, 0);
                 }
             });
         }
     }
 }
+
