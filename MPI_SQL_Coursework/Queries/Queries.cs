@@ -5,7 +5,6 @@ namespace MPI_SQL_Coursework.Queries
 {
     internal class Queries
     {
-        public static List<string> Delete = Enumerable.Repeat("delete from dbo.Nums where n = ", 800).ToList();
+        public static List<string> Delete = Enumerable.Repeat("delete from dbo.Nums where n = ", 80000).ToList();
     }
 }
-

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace MPI_SQL_Coursework
 {
@@ -30,7 +27,7 @@ namespace MPI_SQL_Coursework
                         for (int i = 0; i < Queries.Queries.Delete.Count; i++)
                         {
                             query = string.Concat(query, string.Concat(querytemplate, Convert.ToString(i + 1) + "; "));
-                            total = i+1;
+                            total = i + 1;
                             
                         }
                         DbContext.DelNum(query);
@@ -44,7 +41,7 @@ namespace MPI_SQL_Coursework
                         }
                     }
                     timer.Stop();
-                    Console.WriteLine($"time - {timer.ElapsedMilliseconds} count - {total}");
+                    Console.WriteLine($"[LOG] Number of queries = {total} | Elapsed time = {timer.ElapsedMilliseconds} ms");
                 }
                 else
                 {
@@ -63,4 +60,3 @@ namespace MPI_SQL_Coursework
         }
     }
 }
-
